@@ -53,7 +53,7 @@ func (s *Server) registerTools() {
 	addTool("get_protect_lights", "Get all lights from Unifi Protect", s.getProtectLights, map[string]any{})
 	addTool("get_protect_chimes", "Get all chimes from Unifi Protect", s.getProtectChimes, map[string]any{})
 	addTool("get_protect_liveviews", "Get all live views from Unifi Protect", s.getProtectLiveviews, map[string]any{})
-	
+
 	// Detailed resource information
 	addTool("get_camera_detailed", "Get detailed information about a specific camera", s.getCameraDetailed, map[string]any{
 		"camera_id": map[string]any{"type": "string", "description": "Camera ID (required)"},
@@ -70,7 +70,7 @@ func (s *Server) registerTools() {
 	addTool("get_liveview_detailed", "Get detailed information about a specific live view", s.getLiveviewDetailed, map[string]any{
 		"liveview_id": map[string]any{"type": "string", "description": "Live view ID (required)"},
 	})
-	
+
 	// Events
 	addTool("get_protect_events", "Get events from Unifi Protect", s.getProtectEvents, map[string]any{
 		"limit":  map[string]any{"type": "integer", "description": "Number of events to retrieve (optional, default 50)"},
