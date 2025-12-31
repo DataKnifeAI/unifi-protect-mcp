@@ -20,6 +20,7 @@ Model Context Protocol (MCP) server for Ubiquiti UniFi Protect management. Monit
 - **Event Monitoring**: Query security events and webhook integration
 - **Viewer Management**: Manage Protect viewers and NVR systems
 - **Stdio Transport**: MCP protocol over standard input/output for seamless integration
+- **HTTP Transport**: Optional HTTP API for remote connections and integration
 
 ## Quick Start
 
@@ -45,11 +46,30 @@ LOG_LEVEL=info
 
 ### Running the Server
 
+**Stdio Transport (Default):**
 ```bash
 ./bin/unifi-protect-mcp
 ```
 
-The server listens on stdio and is ready for MCP protocol messages.
+**HTTP Transport:**
+```bash
+MCP_TRANSPORT=http MCP_HTTP_ADDR=:8000 ./bin/unifi-protect-mcp
+```
+
+Then access the endpoints:
+```bash
+# Health check
+curl http://localhost:8000/health
+
+# MCP endpoint
+curl -X POST http://localhost:8000/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"method": "tools/list"}'
+```
+
+**Environment Variables:**
+- `MCP_TRANSPORT`: Set to `"http"` for HTTP transport (default: `"stdio"`)
+- `MCP_HTTP_ADDR`: HTTP server address (default: `:8000`)
 
 ## Available Tools (14 Total)
 
