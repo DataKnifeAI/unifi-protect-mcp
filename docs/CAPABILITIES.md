@@ -5,16 +5,20 @@ Complete reference for all UniFi Protect MCP tools and their capabilities.
 ## Overview
 
 The UniFi Protect MCP Server provides access to UniFi Protect surveillance and security capabilities:
-- **Camera Management** - Monitor and control cameras with smart detection
+- **Camera Management** - Monitor and control cameras with PTZ, RTSPS, and talkback
 - **Sensor Management** - Track door/window sensors, environmental data
 - **Light Management** - Control smart lights and floodlights
 - **Chime Management** - Configure audio alerts and doorbells
 - **Live View Management** - Create and configure multi-camera views
-- **Event Monitoring** - Query security events and alerts
+- **Viewer Management** - Manage Protect viewers and remote access
+- **NVR Management** - Access NVR system information
+- **Event Monitoring** - Query security events, webhooks, and alarms
 
-**Total available tools: 11**
-- **GET Tools**: 6 (data retrieval and monitoring)
-- **Detailed Tools**: 5 (resource-specific details)
+**Total available tools: 23**
+- **GET Tools**: 8 (data retrieval and monitoring)
+- **Detailed Tools**: 7 (resource-specific details)
+- **PATCH Tools**: 5 (resource updates)
+- **Camera Control Tools**: 3 (PTZ and advanced camera controls)
 
 ---
 

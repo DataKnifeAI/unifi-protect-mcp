@@ -6,13 +6,15 @@ Model Context Protocol (MCP) server for Ubiquiti UniFi Protect management. Monit
 
 ## Features
 
-- **14 management tools** for complete Protect operations
-- **Camera Management**: Monitor and control UniFi cameras
-- **Motion & Environment Sensors**: Real-time sensor data
+- **23 management tools** for complete Protect operations
+- **Camera Management**: Monitor and control UniFi cameras with PTZ and RTSPS support
+- **Motion & Environment Sensors**: Real-time sensor data and detailed queries
 - **Smart Lighting**: Control UniFi smart lights
 - **Audio Alerts**: Manage door chimes and notifications
 - **Live Views**: Configure custom camera view layouts
-- **Event Monitoring**: Query security events and alerts
+- **Advanced Camera Controls**: PTZ patrols, presets, talkback sessions
+- **Event Monitoring**: Query security events and webhook integration
+- **Viewer Management**: Manage Protect viewers and NVR systems
 - **Stdio Transport**: MCP protocol over standard input/output for seamless integration
 
 ## Quick Start

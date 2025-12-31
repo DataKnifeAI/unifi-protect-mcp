@@ -70,6 +70,48 @@ func (s *Server) registerTools() {
 		"liveview_id": map[string]any{"type": "string", "description": "Live view ID (required)"},
 	})
 
+	// System and Configuration
+	addTool("get_protect_info", "Get system information from Unifi Protect", s.getProtectInfo, map[string]any{})
+	addTool("get_protect_nvr", "Get NVR information from Unifi Protect", s.getProtectNVR, map[string]any{})
+	addTool("get_protect_viewers", "Get all viewers from Unifi Protect", s.getProtectViewers, map[string]any{})
+	addTool("get_protect_viewer_detailed", "Get detailed information about a specific viewer", s.getProtectViewerDetailed, map[string]any{
+		"id": map[string]any{"type": "string", "description": "Viewer ID"},
+	})
+
+	// Modify Resources
+	addTool("patch_protect_viewer", "Update viewer settings", s.patchProtectViewer, map[string]any{
+		"id":       map[string]any{"type": "string", "description": "Viewer ID"},
+		"settings": map[string]any{"type": "object", "description": "Viewer settings to update"},
+	})
+
+	// Camera Controls
+	addTool("camera_start_ptz_patrol", "Start a PTZ patrol on a camera", s.cameraStartPTZPatrol, map[string]any{
+		"camera_id": map[string]any{"type": "string", "description": "Camera ID"},
+		"slot":      map[string]any{"type": "integer", "description": "Patrol slot number"},
+	})
+	addTool("camera_stop_ptz_patrol", "Stop a PTZ patrol on a camera", s.cameraStopPTZPatrol, map[string]any{
+		"camera_id": map[string]any{"type": "string", "description": "Camera ID"},
+	})
+	addTool("camera_goto_ptz_preset", "Move camera to a PTZ preset position", s.cameraGotoPTZPreset, map[string]any{
+		"camera_id": map[string]any{"type": "string", "description": "Camera ID"},
+		"slot":      map[string]any{"type": "integer", "description": "Preset slot number"},
+	})
+	addTool("camera_create_rtsps_stream", "Create an RTSPS stream for a camera", s.cameraCreateRTSPSStream, map[string]any{
+		"camera_id": map[string]any{"type": "string", "description": "Camera ID"},
+		"config":    map[string]any{"type": "object", "description": "RTSPS stream configuration"},
+	})
+	addTool("camera_create_talkback_session", "Create a talkback session with a camera", s.cameraCreateTalkbackSession, map[string]any{
+		"camera_id": map[string]any{"type": "string", "description": "Camera ID"},
+		"config":    map[string]any{"type": "object", "description": "Talkback session configuration"},
+	})
+	addTool("camera_disable_mic_permanently", "Disable microphone permanently on a camera", s.cameraDisableMicPermanently, map[string]any{
+		"camera_id": map[string]any{"type": "string", "description": "Camera ID"},
+	})
+	addTool("trigger_webhook_alarm", "Trigger a configured alarm webhook", s.triggerWebhookAlarm, map[string]any{
+		"webhook_id": map[string]any{"type": "string", "description": "Webhook ID"},
+		"payload":    map[string]any{"type": "object", "description": "Alarm trigger payload (optional)"},
+	})
+
 	// Events
 	addTool("get_protect_events", "Get events from Unifi Protect", s.getProtectEvents, map[string]any{
 		"limit":  map[string]any{"type": "integer", "description": "Number of events to retrieve (optional, default 50)"},
@@ -307,6 +349,230 @@ func (s *Server) getProtectEvents(ctx context.Context, request mcp.CallToolReque
 		"limit":  limit,
 		"offset": offset,
 	})
+}
+
+func (s *Server) getProtectInfo(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: get_protect_info")
+
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		s.logger.WithError(err).Error("Failed to authenticate with Protect")
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+
+	info, err := s.protectClient.GetSystemInfo(ctx)
+	if err != nil {
+		s.logger.WithError(err).Error("Failed to get system info")
+		return mcp.NewToolResultErrorFromErr("Failed to get system info", err), nil
+	}
+
+	result := map[string]interface{}{
+		"version":             info.Version,
+		"application_version": info.ApplicationVersion,
+		"unique_id":           info.UniqueID,
+		"system_type":         info.SystemType,
+	}
+
+	return mcp.NewToolResultJSON(result)
+}
+
+func (s *Server) getProtectNVR(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: get_protect_nvr")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	nvr, err := s.protectClient.GetNVR(ctx)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to get NVR information", err), nil
+	}
+	return mcp.NewToolResultJSON(nvr)
+}
+
+func (s *Server) getProtectViewers(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: get_protect_viewers")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	viewers, err := s.protectClient.GetViewers(ctx)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to get viewers", err), nil
+	}
+	result := map[string]interface{}{
+		"viewers": viewers,
+		"count":   len(viewers),
+	}
+	return mcp.NewToolResultJSON(result)
+}
+
+func (s *Server) getProtectViewerDetailed(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: get_protect_viewer_detailed")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	viewerID := request.GetString("id", "")
+	if viewerID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: id", nil), nil
+	}
+	viewer, err := s.protectClient.GetViewerDetailed(ctx, viewerID)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to get viewer details", err), nil
+	}
+	return mcp.NewToolResultJSON(viewer)
+}
+
+func (s *Server) patchProtectViewer(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: patch_protect_viewer")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	viewerID := request.GetString("id", "")
+	if viewerID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: id", nil), nil
+	}
+	args := request.GetArguments()
+	settings, ok := args["settings"].(map[string]interface{})
+	if !ok || len(settings) == 0 {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: settings", nil), nil
+	}
+	viewer, err := s.protectClient.PatchViewer(ctx, viewerID, settings)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to update viewer", err), nil
+	}
+	return mcp.NewToolResultJSON(viewer)
+}
+
+func (s *Server) cameraStartPTZPatrol(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: camera_start_ptz_patrol")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	cameraID := request.GetString("camera_id", "")
+	if cameraID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: camera_id", nil), nil
+	}
+	slot := request.GetInt("slot", 0)
+	if slot < 0 {
+		return mcp.NewToolResultErrorFromErr("Invalid slot number", nil), nil
+	}
+	result, err := s.protectClient.CameraStartPTZPatrol(ctx, cameraID, slot)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to start PTZ patrol", err), nil
+	}
+	return mcp.NewToolResultJSON(result)
+}
+
+func (s *Server) cameraStopPTZPatrol(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: camera_stop_ptz_patrol")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	cameraID := request.GetString("camera_id", "")
+	if cameraID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: camera_id", nil), nil
+	}
+	result, err := s.protectClient.CameraStopPTZPatrol(ctx, cameraID)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to stop PTZ patrol", err), nil
+	}
+	return mcp.NewToolResultJSON(result)
+}
+
+func (s *Server) cameraGotoPTZPreset(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: camera_goto_ptz_preset")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	cameraID := request.GetString("camera_id", "")
+	if cameraID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: camera_id", nil), nil
+	}
+	slot := request.GetInt("slot", 0)
+	if slot < 0 {
+		return mcp.NewToolResultErrorFromErr("Invalid slot number", nil), nil
+	}
+	result, err := s.protectClient.CameraGotoPTZPreset(ctx, cameraID, slot)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to move to PTZ preset", err), nil
+	}
+	return mcp.NewToolResultJSON(result)
+}
+
+func (s *Server) cameraCreateRTSPSStream(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: camera_create_rtsps_stream")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	cameraID := request.GetString("camera_id", "")
+	if cameraID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: camera_id", nil), nil
+	}
+	args := request.GetArguments()
+	config, ok := args["config"].(map[string]interface{})
+	if !ok {
+		config = map[string]interface{}{}
+	}
+	stream, err := s.protectClient.CameraCreateRTSPSStream(ctx, cameraID, config)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to create RTSPS stream", err), nil
+	}
+	return mcp.NewToolResultJSON(stream)
+}
+
+func (s *Server) cameraCreateTalkbackSession(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: camera_create_talkback_session")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	cameraID := request.GetString("camera_id", "")
+	if cameraID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: camera_id", nil), nil
+	}
+	args := request.GetArguments()
+	config, ok := args["config"].(map[string]interface{})
+	if !ok {
+		config = map[string]interface{}{}
+	}
+	session, err := s.protectClient.CameraCreateTalkbackSession(ctx, cameraID, config)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to create talkback session", err), nil
+	}
+	return mcp.NewToolResultJSON(session)
+}
+
+func (s *Server) cameraDisableMicPermanently(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: camera_disable_mic_permanently")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	cameraID := request.GetString("camera_id", "")
+	if cameraID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: camera_id", nil), nil
+	}
+	result, err := s.protectClient.CameraDisableMicPermanently(ctx, cameraID)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to disable microphone", err), nil
+	}
+	return mcp.NewToolResultJSON(result)
+}
+
+func (s *Server) triggerWebhookAlarm(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	s.logger.Debug("Tool called: trigger_webhook_alarm")
+	if err := s.protectClient.Authenticate(ctx); err != nil {
+		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
+	}
+	webhookID := request.GetString("webhook_id", "")
+	if webhookID == "" {
+		return mcp.NewToolResultErrorFromErr("Missing required parameter: webhook_id", nil), nil
+	}
+	args := request.GetArguments()
+	payload, ok := args["payload"].(map[string]interface{})
+	if !ok {
+		payload = map[string]interface{}{}
+	}
+	result, err := s.protectClient.TriggerWebhookAlarm(ctx, webhookID, payload)
+	if err != nil {
+		return mcp.NewToolResultErrorFromErr("Failed to trigger webhook alarm", err), nil
+	}
+	return mcp.NewToolResultJSON(result)
 }
 
 // ServeStdio starts the MCP server with stdio transport
