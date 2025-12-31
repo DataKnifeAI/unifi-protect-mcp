@@ -1,23 +1,23 @@
-# UniFi MCP Server - Getting Started
+# UniFi Protect MCP Server - Getting Started
 
-Complete guide to set up and start using UniFi MCP Server.
+Complete guide to set up and start using the UniFi Protect MCP Server for surveillance and security monitoring.
 
 ## Quick Start (5 Minutes)
 
 ### Prerequisites
 - Go 1.21+ installed
-- UniFi Controller 8.0+ running
+- UniFi Protect System running (integrated with controller or standalone)
 - API Key (generated below)
 
 ### 1. Get API Key (1 minute)
-1. Log in to UniFi Web UI (`https://your-controller:8443`)
+1. Log in to UniFi Web UI (`https://your-controller:8443`) or Protect UI
 2. System Settings → Integrations
 3. Click "Create API Key"
 4. Copy and save the key
 
 ### 2. Configure (1 minute)
 ```bash
-cd unifi-mcp
+cd unifi-protect-mcp
 cat > .env << EOF
 UNIFI_API_KEY=your-api-key-here
 UNIFI_BASE_URL=https://192.168.1.1
@@ -32,47 +32,47 @@ go run cmd/main.go
 
 Expected output:
 ```
-INFO[...] Initializing Unifi MCP Server
-INFO[...] Registered 26 MCP tools
-INFO[...] Starting Unifi MCP Server on stdio transport
+INFO[...] Initializing UniFi Protect MCP Server
+INFO[...] Registered 11 MCP tools
+INFO[...] Starting UniFi Protect MCP Server on stdio transport
 ```
 
 ### 4. Verify (2 minutes)
 ```bash
-# Test API key in another terminal
+# Test API key in another terminal - check cameras
 curl -H "X-API-KEY: your-api-key" \
-  https://192.168.1.1/proxy/network/api/self/sites
+  https://192.168.1.1/proxy/protect/integration/v1/cameras
 ```
 
 ## Complete Setup Guide
 
 ### System Requirements
 - **Go 1.21+** - For building
-- **UniFi Controller 8.0+** - Newer versions recommended
-- **Network Access** - Controller must be accessible
+- **UniFi Protect System** - Required for surveillance features
+- **Network Access** - Protect system must be accessible
 
 ### Installation Options
 
 #### Option 1: Build from Source
 ```bash
-cd unifi-mcp
+cd unifi-protect-mcp
 go mod download
-go build -o bin/unifi-mcp cmd/main.go
-./bin/unifi-mcp
+go build -o bin/unifi-protect-mcp cmd/main.go
+./bin/unifi-protect-mcp
 ```
 
 #### Option 2: Run Directly
 ```bash
-cd unifi-mcp
+cd unifi-protect-mcp
 go run cmd/main.go
 ```
 
 #### Option 3: Docker
 ```bash
-docker build -t unifi-mcp .
+docker build -t unifi-protect-mcp .
 docker run -e UNIFI_API_KEY=your-key \
            -e UNIFI_BASE_URL=https://192.168.1.1 \
-           unifi-mcp
+           unifi-protect-mcp
 ```
 
 ### Configuration
@@ -161,9 +161,9 @@ Via MCP client:
    - Add new server with settings:
      ```json
      {
-       "name": "unifi-mcp",
+       "name": "unifi-protect-mcp",
        "command": "go",
-       "args": ["run", "/path/to/unifi-mcp/cmd/main.go"],
+       "args": ["run", "/path/to/unifi-protect-mcp/cmd/main.go"],
        "env": {
          "UNIFI_API_KEY": "your-key",
          "UNIFI_BASE_URL": "https://192.168.1.1"
@@ -183,7 +183,7 @@ Via MCP client:
 ```yaml
 version: '3.8'
 services:
-  unifi-mcp:
+  unifi-protect-mcp:
     build: .
     environment:
       UNIFI_API_KEY: ${UNIFI_API_KEY}
@@ -222,7 +222,7 @@ UNIFI_SKIP_SSL_VERIFY=true go run cmd/main.go
 ```
 
 ### "No Tools Found" in Claude
-1. Verify server is running: `ps aux | grep unifi-mcp`
+1. Verify server is running: `ps aux | grep unifi-protect-mcp`
 2. Check MCP configuration path and environment variables
 3. Check server logs: `LOG_LEVEL=debug go run cmd/main.go`
 4. Restart Claude completely (quit, don't just close)

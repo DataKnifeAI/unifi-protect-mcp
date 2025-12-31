@@ -47,7 +47,6 @@ func (s *Server) registerTools() {
 	}
 
 	// Device and System queries
-	addTool("get_protect_devices", "Get all devices from Unifi Protect", s.getProtectDevices, map[string]any{})
 	addTool("get_protect_cameras", "Get all cameras from Unifi Protect", s.getProtectCameras, map[string]any{})
 	addTool("get_protect_sensors", "Get all sensors from Unifi Protect", s.getProtectSensors, map[string]any{})
 	addTool("get_protect_lights", "Get all lights from Unifi Protect", s.getProtectLights, map[string]any{})
@@ -81,24 +80,6 @@ func (s *Server) registerTools() {
 }
 
 // GET Handlers
-
-func (s *Server) getProtectDevices(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
-	s.logger.Debug("Tool called: get_protect_devices")
-
-	if err := s.protectClient.Authenticate(ctx); err != nil {
-		return mcp.NewToolResultErrorFromErr("Authentication failed", err), nil
-	}
-
-	devices, err := s.protectClient.GetDevices(ctx)
-	if err != nil {
-		return mcp.NewToolResultErrorFromErr("Failed to get devices", err), nil
-	}
-
-	return mcp.NewToolResultJSON(map[string]interface{}{
-		"devices": devices,
-		"count":   len(devices),
-	})
-}
 
 func (s *Server) getProtectCameras(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
 	s.logger.Debug("Tool called: get_protect_cameras")

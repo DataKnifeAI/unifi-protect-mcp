@@ -1,6 +1,8 @@
-# UniFi MCP Server Documentation
+# UniFi Protect MCP Server Documentation
 
-Complete documentation for the UniFi Model Context Protocol (MCP) Server.
+Complete documentation for the UniFi Protect Model Context Protocol (MCP) Server.
+
+This server provides surveillance and security camera management capabilities for UniFi Protect systems (cameras, sensors, lights, chimes, and live views).
 
 ## Documentation Index
 
@@ -181,7 +183,7 @@ LOG_LEVEL=debug go run cmd/main.go
 
 ### Build Binary
 ```bash
-go build -o unifi-mcp cmd/main.go
+go build -o unifi-protect-mcp cmd/main.go
 ```
 
 ### Run Tests
@@ -191,8 +193,8 @@ go test ./...
 
 ### Docker
 ```bash
-docker build -t unifi-mcp .
-docker run -e UNIFI_API_KEY=key -e UNIFI_BASE_URL=url unifi-mcp
+docker build -t unifi-protect-mcp .
+docker run -e UNIFI_API_KEY=key -e UNIFI_BASE_URL=url unifi-protect-mcp
 ```
 
 ---

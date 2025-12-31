@@ -49,3 +49,4 @@ htmlcov/
 tmp/
 temp/
 *.tmp
+bin/unifi-protect-mcp

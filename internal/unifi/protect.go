@@ -136,39 +136,6 @@ func (pc *ProtectClient) Authenticate(ctx context.Context) error {
 	return nil
 }
 
-// GetDevices retrieves all devices from Unifi Protect
-func (pc *ProtectClient) GetDevices(ctx context.Context) ([]ProtectDevice, error) {
-	pc.logger.Debug("Fetching devices from Unifi Protect")
-
-	url := fmt.Sprintf("%s/proxy/protect/integration/v1/devices", pc.baseURL)
-	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
-	}
-
-	req.Header.Set("X-API-KEY", pc.apiKey)
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := pc.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("request failed: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return nil, fmt.Errorf("request failed with status %d: %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	var devices []ProtectDevice
-	if err := json.NewDecoder(resp.Body).Decode(&devices); err != nil {
-		return nil, fmt.Errorf("failed to decode response: %w", err)
-	}
-
-	pc.logger.WithField("count", len(devices)).Debug("Retrieved devices")
-	return devices, nil
-}
-
 // GetEvents retrieves events from Unifi Protect
 // Note: This endpoint may not be available in all Unifi Protect versions
 func (pc *ProtectClient) GetEvents(ctx context.Context, limit int, offset int) ([]ProtectEvent, error) {
@@ -450,7 +417,7 @@ func (pc *ProtectClient) GetNVR(ctx context.Context) (map[string]interface{}, er
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pc.apiKey))
+	req.Header.Set("X-API-KEY", pc.apiKey)
 
 	resp, err := pc.httpClient.Do(req)
 	if err != nil {
@@ -506,7 +473,7 @@ func (pc *ProtectClient) makeDetailRequest(ctx context.Context, url string) (map
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pc.apiKey))
+	req.Header.Set("X-API-KEY", pc.apiKey)
 
 	resp, err := pc.httpClient.Do(req)
 	if err != nil {
@@ -533,7 +500,7 @@ func (pc *ProtectClient) makeArrayRequest(ctx context.Context, url string) ([]ma
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pc.apiKey))
+	req.Header.Set("X-API-KEY", pc.apiKey)
 
 	resp, err := pc.httpClient.Do(req)
 	if err != nil {
@@ -566,7 +533,7 @@ func (pc *ProtectClient) makePatchRequest(ctx context.Context, url string, paylo
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pc.apiKey))
+	req.Header.Set("X-API-KEY", pc.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := pc.httpClient.Do(req)
@@ -644,7 +611,7 @@ func (pc *ProtectClient) makePostRequest(ctx context.Context, url string, payloa
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", pc.apiKey))
+	req.Header.Set("X-API-KEY", pc.apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := pc.httpClient.Do(req)

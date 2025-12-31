@@ -1,6 +1,6 @@
-# UniFi MCP Server - Troubleshooting Guide
+# UniFi Protect MCP Server - Troubleshooting Guide
 
-Complete troubleshooting for common issues.
+Complete troubleshooting for the UniFi Protect MCP Server for surveillance and security monitoring.
 
 ## Quick Diagnosis
 
@@ -8,10 +8,10 @@ Complete troubleshooting for common issues.
 
 ```bash
 # Is the server running?
-ps aux | grep unifi-mcp
+ps aux | grep unifi-protect-mcp
 
 # Check logs
-journalctl -u unifi-mcp -n 50  # If running as service
+journalctl -u unifi-protect-mcp -n 50  # If running as service
 ```
 
 ### Step 2: Verify Configuration
@@ -219,7 +219,7 @@ request failed: context deadline exceeded
      ```json
      {
        "command": "go",
-       "args": ["run", "/path/to/unifi-mcp/cmd/main.go"],
+       "args": ["run", "/path/to/unifi-protect-mcp/cmd/main.go"],
        "env": {
          "UNIFI_API_KEY": "your-key",
          "UNIFI_BASE_URL": "https://192.168.1.1"
@@ -480,8 +480,8 @@ certificate verify failed
 3. **Rebuild from Clean State:**
    ```bash
    rm -rf bin/ build/
-   go build -o unifi-mcp cmd/main.go
-   ./unifi-mcp
+   go build -o unifi-protect-mcp cmd/main.go
+   ./unifi-protect-mcp
    ```
 
 4. **Check for Syntax Errors:**
@@ -562,13 +562,13 @@ strace -e trace=network go run cmd/main.go 2>&1 | grep connect
 
 ```bash
 # While server is running
-watch -n 1 'ps aux | grep unifi-mcp'
+watch -n 1 'ps aux | grep unifi-protect-mcp'
 ```
 
 ### Check Open Connections
 
 ```bash
-lsof -p $(pgrep -f unifi-mcp)
+lsof -p $(pgrep -f unifi-protect-mcp)
 ```
 
 ### Profile CPU Usage
@@ -638,7 +638,7 @@ go version
 
 ```bash
 # Backup configuration
-cp -r ~/.unifi-mcp ~/.unifi-mcp.backup.$(date +%Y%m%d)
+cp -r ~/.unifi-protect-mcp ~/.unifi-protect-mcp.backup.$(date +%Y%m%d)
 ```
 
 ### Monitor Health

@@ -13,8 +13,8 @@
 
 ```bash
 # 1. Clone and setup
-git clone https://github.com/yourusername/unifi-mcp.git
-cd unifi-mcp
+git clone https://github.com/yourusername/unifi-protect-mcp.git
+cd unifi-protect-mcp
 
 # 2. Configure
 cp .env.example .env
@@ -32,14 +32,14 @@ make run
 ### Using Docker Run
 
 ```bash
-docker build -t unifi-mcp:latest .
+docker build -t unifi-protect-mcp:latest .
 
 docker run -d \
-  --name unifi-mcp \
+  --name unifi-protect-mcp \
   -e UNIFI_API_KEY="your-api-key-here" \
   -e UNIFI_BASE_URL="https://your-unifi-controller:443" \
   -e LOG_LEVEL="info" \
-  unifi-mcp:latest
+  unifi-protect-mcp:latest
 ```
 
 ### Using Docker Compose
@@ -55,7 +55,7 @@ nano .env
 docker-compose up -d
 
 # 4. View logs
-docker-compose logs -f unifi-mcp
+docker-compose logs -f unifi-protect-mcp
 
 # 5. Stop
 docker-compose down
@@ -66,10 +66,10 @@ docker-compose down
 ### Create ConfigMap and Secret
 
 ```bash
-kubectl create configmap unifi-mcp-config \
+kubectl create configmap unifi-protect-mcp-config \
   --from-literal=LOG_LEVEL=info
 
-kubectl create secret generic unifi-mcp-secret \
+kubectl create secret generic unifi-protect-mcp-secret \
   --from-literal=UNIFI_API_KEY=your-api-key-here
 ```
 
@@ -79,32 +79,32 @@ kubectl create secret generic unifi-mcp-secret \
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: unifi-mcp
+  name: unifi-protect-mcp
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: unifi-mcp
+      app: unifi-protect-mcp
   template:
     metadata:
       labels:
-        app: unifi-mcp
+        app: unifi-protect-mcp
     spec:
       containers:
-      - name: unifi-mcp
-        image: unifi-mcp:latest
+      - name: unifi-protect-mcp
+        image: unifi-protect-mcp:latest
         env:
         - name: UNIFI_BASE_URL
           value: "https://your-unifi-controller:443"
         - name: UNIFI_API_KEY
           valueFrom:
             secretKeyRef:
-              name: unifi-mcp-secret
+              name: unifi-protect-mcp-secret
               key: UNIFI_API_KEY
         - name: LOG_LEVEL
           valueFrom:
             configMapKeyRef:
-              name: unifi-mcp-config
+              name: unifi-protect-mcp-config
               key: LOG_LEVEL
         resources:
           requests:
@@ -117,18 +117,18 @@ spec:
 
 ## Systemd Service
 
-Create `/etc/systemd/system/unifi-mcp.service`:
+Create `/etc/systemd/system/unifi-protect-mcp.service`:
 
 ```ini
 [Unit]
-Description=Unifi MCP Server
+Description=Unifi Protect MCP Server
 After=network.target
 
 [Service]
 Type=simple
 User=unifi
-WorkingDirectory=/opt/unifi-mcp
-ExecStart=/opt/unifi-mcp/bin/unifi-mcp
+WorkingDirectory=/opt/unifi-protect-mcp
+ExecStart=/opt/unifi-protect-mcp/bin/unifi-protect-mcp
 Restart=always
 RestartSec=10
 Environment="UNIFI_API_KEY=your-api-key-here"
@@ -143,9 +143,9 @@ Enable and start:
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable unifi-mcp
-sudo systemctl start unifi-mcp
-sudo systemctl status unifi-mcp
+sudo systemctl enable unifi-protect-mcp
+sudo systemctl start unifi-protect-mcp
+sudo systemctl status unifi-protect-mcp
 ```
 
 ## Environment Variables
@@ -187,10 +187,10 @@ livenessProbe:
 
 ```bash
 # Docker Compose
-docker-compose logs -f unifi-mcp
+docker-compose logs -f unifi-protect-mcp
 
 # Systemd
-journalctl -u unifi-mcp -f
+journalctl -u unifi-protect-mcp -f
 ```
 
 ### Metrics
@@ -255,21 +255,21 @@ docker-compose up -d
 
 ```bash
 # Stop service
-systemctl stop unifi-mcp
+systemctl stop unifi-protect-mcp
 
 # Update binary
 make build
-cp bin/unifi-mcp /usr/local/bin/
+cp bin/unifi-protect-mcp /usr/local/bin/
 
 # Start service
-systemctl start unifi-mcp
+systemctl start unifi-protect-mcp
 ```
 
 ### Docker Update
 
 ```bash
 # Pull latest
-docker pull unifi-mcp:latest
+docker pull unifi-protect-mcp:latest
 
 # Stop and remove old container
 docker-compose down
