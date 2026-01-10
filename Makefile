@@ -42,9 +42,13 @@ FULL_IMAGE = $(HARBOR_REGISTRY)/$(HARBOR_PROJECT)/$(IMAGE_NAME):$(IMAGE_TAG)
 
 docker-login:
 	@echo "Logging in to Harbor registry..."
-	@docker login $(HARBOR_REGISTRY) \
-		-u '$${HARBOR_USERNAME:-robot$$library+ci-builder}' \
-		-p '$${HARBOR_PASSWORD}'
+	@if [ -z "$${HARBOR_PASSWORD}" ]; then \
+		echo "Error: HARBOR_PASSWORD must be set"; \
+		exit 1; \
+	fi
+	@echo "$${HARBOR_PASSWORD}" | docker login $(HARBOR_REGISTRY) \
+		-u "$${HARBOR_USERNAME:-robot$$library+ci-builder}" \
+		--password-stdin
 
 docker-pull-base:
 	@echo "Pulling base images from Harbor cache..."
