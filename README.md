@@ -1,5 +1,8 @@
 # UniFi Protect MCP
 
+![UniFi Protect MCP server](docs/assets/unifi-protect-mcp-hero.jpg)
+
+
 Model Context Protocol (MCP) server for Ubiquiti UniFi Protect management. Monitor and manage your UniFi security devices through an AI-powered interface.
 
 **Focused on:** Cameras, motion sensors, smart lights, chimes, live view configurations, and security events.
